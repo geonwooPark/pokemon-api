@@ -3,6 +3,7 @@ import "./App.css";
 
 export default function App() {
   const initURL = "https://pokeapi.co/api/v2/pokemon";
+  const [pokemonData, setPokemonData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const getAllPokemon = (url) => {
@@ -13,10 +14,32 @@ export default function App() {
     });
   };
 
+  const getPokemon = (url) => {
+    return new Promise((resolve, reject) => {
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          resolve(data);
+        });
+    });
+  };
+
+  const loadPokemon = async (data) => {
+    let pokemonData = await Promise.all(
+      data.map((pokemon) => {
+        let pokemonRecode = getPokemon(pokemon.url);
+        return pokemonRecode;
+      })
+    );
+    setPokemonData(pokemonData);
+  };
+
+  console.log(pokemonData);
+
   useEffect(() => {
     const fetchData = async () => {
       let res = await getAllPokemon(initURL);
-      console.log(res);
+      loadPokemon(res.results);
       setLoading(false);
     };
     fetchData();
