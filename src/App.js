@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Card from "./components/Card";
+import Header from "./components/Header";
 
 export default function App() {
   const initURL = "https://pokeapi.co/api/v2/pokemon";
@@ -48,13 +49,15 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-[100vh]">
-      <h1 className="text-2xl font-bold text-center mt-2">포켓몬 데이터</h1>
-      <div className="grid grid-cols-3 justify-items-center	 gap-5 mt-5">
-        {pokemonData.map((pokemon) => (
-          <Card key={pokemon.id} pokemon={pokemon} />
-        ))}
+    <>
+      <Header />
+      <div className="w-full h-[100vh]">
+        <div className="grid grid-cols-3 justify-items-center	 gap-5 mt-5">
+          {pokemonData.map((pokemon) => (
+            <Card key={pokemon.id} pokemon={pokemon} />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
