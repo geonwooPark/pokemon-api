@@ -7,7 +7,6 @@ export default function App() {
   const [pokemonData, setPokemonData] = useState([]);
   const [nextURL, setNextURL] = useState("");
   const [prevURL, setPrevURL] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const getAllPokemon = (url) => {
     return new Promise((resolve) => {
@@ -39,11 +38,9 @@ export default function App() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       let res = await getAllPokemon(initURL);
       loadPokemon(res.results);
       setNextURL(res.next);
-      setLoading(false);
     };
     fetchData();
   }, []);
@@ -53,30 +50,21 @@ export default function App() {
       return;
     }
 
-    setLoading(true);
     let data = await getAllPokemon(prevURL);
     setNextURL(data.next);
     setPrevURL(data.previous);
     loadPokemon(data.results);
-    setLoading(false);
   };
 
   const handleNextPage = async () => {
     if (!nextURL) {
       return;
     }
-
-    setLoading(true);
     let data = await getAllPokemon(nextURL);
     setNextURL(data.next);
     setPrevURL(data.previous);
     loadPokemon(data.results);
-    setLoading(false);
   };
-
-  if (loading) {
-    return <div>로딩중...</div>;
-  }
 
   return (
     <>
@@ -90,14 +78,14 @@ export default function App() {
         <div className="flex justify-center mt-4 mb-4">
           <button
             onClick={handlePrevPage}
-            className="bg-white p-2 rounded-md shadow-[0px_10px_20px_1px_#96adbb] mr-4 disabled:bg-slate-300"
+            className="bg-white p-2 rounded-md shadow-md mr-4 disabled:bg-slate-300"
             disabled={!prevURL && true}
           >
             이전
           </button>
           <button
             onClick={handleNextPage}
-            className="bg-white p-2 rounded-md shadow-[0px_10px_20px_1px_#96adbb] disabled:bg-slate-300"
+            className="bg-white p-2 rounded-md shadow-md disabled:bg-slate-300"
             disabled={!nextURL && true}
           >
             다음

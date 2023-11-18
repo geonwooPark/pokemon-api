@@ -2,7 +2,7 @@ import React from "react";
 
 export default function Card({ pokemon }) {
   return (
-    <div className="w-[290px] bg-white shadow-[0px_10px_20px_1px_#96adbb] rounded-xl text-center py-4">
+    <div className="w-[290px] bg-white shadow-2xl rounded-lg text-center py-4">
       <div>
         <img
           src={pokemon.sprites.front_default}
