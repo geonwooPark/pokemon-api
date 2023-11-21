@@ -1,4 +1,4 @@
-import { Suspense, startTransition, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Header from "./components/Header";
 import SkeletonCardList from "./components/SkeletonCardList";
 import CardList from "./components/CardList";
@@ -20,15 +20,11 @@ export default function App() {
   }, [URL, data.next, queryClient]);
 
   const handleNextPage = () => {
-    startTransition(() => {
-      setURL(data.next);
-    });
+    setURL(data.next);
   };
 
   const handlePrevPage = () => {
-    startTransition(() => {
-      setURL(data.previous);
-    });
+    setURL(data.previous);
   };
 
   if (isFetching) return <Spinner />;
