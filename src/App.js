@@ -2,29 +2,31 @@ import { Suspense, useEffect, useState } from "react";
 import Header from "./components/Header";
 import SkeletonCardList from "./components/SkeletonCardList";
 import CardList from "./components/CardList";
-import { getFetchData, usePokemonData } from "./hooks/usePokemonData";
+import { getPageData, usePokemonData } from "./hooks/usePokemonData";
 import { useQueryClient } from "@tanstack/react-query";
 import Spinner from "./components/Spinner";
 
 export default function App() {
   const queryClient = useQueryClient();
 
-  const [URL, setURL] = useState("https://pokeapi.co/api/v2/pokemon");
-  const { data, isFetching } = usePokemonData(URL, "pokemon");
+  const initURL = "https://pokeapi.co/api/v2/pokemon";
+
+  const [page, setPage] = useState(1);
+  const { data, isFetching } = usePokemonData(initURL, page);
 
   useEffect(() => {
     queryClient.prefetchQuery({
-      queryKey: ["pokemon", data.next],
-      queryFn: () => getFetchData(data.next),
+      queryKey: ["pokemons", { page: page + 1 }],
+      queryFn: () => getPageData(initURL, page + 1),
     });
-  }, [URL, data.next, queryClient]);
+  }, [page, data.next, queryClient]);
 
   const handleNextPage = () => {
-    setURL(data.next);
+    setPage((prev) => prev + 1);
   };
 
   const handlePrevPage = () => {
-    setURL(data.previous);
+    setPage((prev) => prev - 1);
   };
 
   if (isFetching) return <Spinner />;
@@ -34,7 +36,7 @@ export default function App() {
       <Header />
       <section className="w-full h-[100%]">
         <Suspense fallback={<SkeletonCardList />}>
-          <CardList data={data.results} />
+          <CardList data={data.results} page={page} />
         </Suspense>
         <div className="flex justify-center mt-4 mb-4">
           <button

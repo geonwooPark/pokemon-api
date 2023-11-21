@@ -1,15 +1,17 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-export const getFetchData = async (url) => {
-  const { data } = await axios.get(`${url}`);
+export const getPageData = async (initURL, page) => {
+  const { data } = await axios.get(
+    `${initURL}?offset=${20 * (page - 1)}&limit=20`
+  );
   return data;
 };
 
-export const usePokemonData = (url, key) => {
+export const usePokemonData = (initURL, page) => {
   return useSuspenseQuery({
-    queryKey: [key, url],
-    queryFn: () => getFetchData(url),
+    queryKey: ["pokemons", { page }],
+    queryFn: () => getPageData(initURL, page),
     keepPreviousData: true,
   });
 };
