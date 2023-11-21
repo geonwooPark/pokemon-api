@@ -1,97 +1,62 @@
-import { useEffect, useState } from "react";
-import Card from "./components/Card";
+import { Suspense, startTransition, useEffect, useState } from "react";
 import Header from "./components/Header";
+import SkeletonCardList from "./components/SkeletonCardList";
+import CardList from "./components/CardList";
+import { getFetchData, usePokemonData } from "./hooks/usePokemonData";
+import { useQueryClient } from "@tanstack/react-query";
+import Spinner from "./components/Spinner";
 
 export default function App() {
-  const initURL = "https://pokeapi.co/api/v2/pokemon";
-  const [pokemonData, setPokemonData] = useState([]);
-  const [nextURL, setNextURL] = useState("");
-  const [prevURL, setPrevURL] = useState("");
+  const queryClient = useQueryClient();
 
-  const getAllPokemon = (url) => {
-    return new Promise((resolve) => {
-      fetch(url)
-        .then((res) => res.json())
-        .then((data) => resolve(data));
-    });
-  };
-
-  const getPokemon = (url) => {
-    return new Promise((resolve) => {
-      fetch(url)
-        .then((res) => res.json())
-        .then((data) => {
-          resolve(data);
-        });
-    });
-  };
-
-  const loadPokemon = async (data) => {
-    let pokemonData = await Promise.all(
-      data.map((pokemon) => {
-        let pokemonRecode = getPokemon(pokemon.url);
-        return pokemonRecode;
-      })
-    );
-    setPokemonData(pokemonData);
-  };
+  const [URL, setURL] = useState("https://pokeapi.co/api/v2/pokemon");
+  const { data, isFetching } = usePokemonData(URL, "pokemon");
 
   useEffect(() => {
-    const fetchData = async () => {
-      let res = await getAllPokemon(initURL);
-      loadPokemon(res.results);
-      setNextURL(res.next);
-    };
-    fetchData();
-  }, []);
+    queryClient.prefetchQuery({
+      queryKey: ["pokemon", data.next],
+      queryFn: () => getFetchData(data.next),
+    });
+  }, [URL, data.next, queryClient]);
 
-  const handlePrevPage = async () => {
-    if (!prevURL) {
-      return;
-    }
-
-    let data = await getAllPokemon(prevURL);
-    setNextURL(data.next);
-    setPrevURL(data.previous);
-    loadPokemon(data.results);
+  const handleNextPage = () => {
+    startTransition(() => {
+      setURL(data.next);
+    });
   };
 
-  const handleNextPage = async () => {
-    if (!nextURL) {
-      return;
-    }
-    let data = await getAllPokemon(nextURL);
-    setNextURL(data.next);
-    setPrevURL(data.previous);
-    loadPokemon(data.results);
+  const handlePrevPage = () => {
+    startTransition(() => {
+      setURL(data.previous);
+    });
   };
+
+  if (isFetching) return <Spinner />;
 
   return (
     <>
       <Header />
-      <div className="w-full h-[100%]">
-        <div className="grid grid-cols-3 justify-items-center	gap-5 mt-5">
-          {pokemonData.map((pokemon) => (
-            <Card key={pokemon.id} pokemon={pokemon} />
-          ))}
-        </div>
+      <section className="w-full h-[100%]">
+        <Suspense fallback={<SkeletonCardList />}>
+          <CardList data={data.results} />
+        </Suspense>
         <div className="flex justify-center mt-4 mb-4">
           <button
             onClick={handlePrevPage}
-            className="bg-white p-2 rounded-md shadow-md mr-4 disabled:bg-slate-300"
-            disabled={!prevURL && true}
+            className="bg-white p-2 rounded-md shadow-md mr-4 disabled:bg-slate-300 disabled:shadow-none"
+            disabled={!data.previous && true}
           >
             이전
           </button>
           <button
             onClick={handleNextPage}
             className="bg-white p-2 rounded-md shadow-md disabled:bg-slate-300"
-            disabled={!nextURL && true}
+            disabled={!data.next && true}
           >
             다음
           </button>
         </div>
-      </div>
+      </section>
     </>
   );
 }
